@@ -11,3 +11,5 @@ results
 debug_states
 tortoise-tts
 *.mp4
+*.mp3
+*.wav
