@@ -1,0 +1,13 @@
+__pycache__/
+.cache/
+.models/
+.cog/
+.huggingface/
+.torch/
+*.pt
+*.ckpt
+.env
+results
+debug_states
+tortoise-tts
+*.mp4
