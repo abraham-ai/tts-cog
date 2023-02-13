@@ -5,6 +5,8 @@ sys.path.append("/src/tortoise-tts/tortoise")
 os.environ["TORCH_HOME"] = "/src/.torch"
 os.environ['TRANSFORMERS_CACHE'] = '/src/.cache/'
 
+MODELS_DIR = "/src/.models"
+
 from cog import BasePredictor, BaseModel, File, Input, Path
 
 import requests
@@ -14,18 +16,22 @@ import torchaudio
 from api import TextToSpeech
 from utils.audio import load_voices, load_audio
 
-MODELS_DIR = "/src/.models"
 
-
-def download_audio(voice_url, voice_dir):
-    filename = voice_url.split('/')[-1]+'.wav'
-    filepath = voice_dir / filename
+def download(url, folder, ext):
+    filename = url.split('/')[-1]+ext
+    filepath = folder / filename
     if filepath.exists():
         return filepath
-    audio_file = requests.get(voice_url, stream=True).raw
+    raw_file = requests.get(url, stream=True).raw
     with open(filepath, 'wb') as f:
-        f.write(audio_file.read())
+        f.write(raw_file.read())
     return filepath
+
+
+class CogOutput(BaseModel):
+    file: Path
+    thumbnail: Path
+    attributes: dict
 
 
 class Predictor(BasePredictor):
@@ -41,7 +47,7 @@ class Predictor(BasePredictor):
         preset: str = Input(description="Preset to use", default="standard", choices=["ultra_fast", "fast", "standard", "high_quality"]),
         seed: int = Input(description="Seed for deterministic generation", default=None),
         #candidates: int = Input(description="Number of candidates to generate", default=1),
-    ) -> Path:
+    ) -> CogOutput:
 
         out_dir = Path(tempfile.mkdtemp())
         out_path = out_dir / f'{voice}.wav'
@@ -58,7 +64,7 @@ class Predictor(BasePredictor):
             voice_file_urls = voice_file_urls.split('|')
 
             for voice_url in voice_file_urls:
-                voice_file = download_audio(voice_url, voice_dir)
+                voice_file = download(voice_url, voice_dir, '.wav')
                 sample = load_audio(str(voice_file), 22050)
                 voice_samples.append(sample)
 
@@ -78,7 +84,8 @@ class Predictor(BasePredictor):
             gen.squeeze(0).cpu(), 
             24000
         )
+        
         print(f"Saved to {out_path}")
 
-        return out_path
+        return CogOutput(file=out_path, thumbnail=None, attributes={})
         
