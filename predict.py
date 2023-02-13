@@ -87,5 +87,5 @@ class Predictor(BasePredictor):
         
         print(f"Saved to {out_path}")
 
-        return CogOutput(file=out_path, thumbnail=None, attributes={})
+        return CogOutput(file=out_path, thumbnail=out_path, attributes={})
         
