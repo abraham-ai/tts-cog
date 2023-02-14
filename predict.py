@@ -29,7 +29,6 @@ def download(url, folder, ext):
     return filepath
 
 
-
 class CogOutput(BaseModel):
     file: Path
     name: Optional[str] = None
@@ -37,7 +36,6 @@ class CogOutput(BaseModel):
     attributes: Optional[dict] = None
     progress: Optional[float] = None
     isFinal: bool = False
-
 
 
 class Predictor(BasePredictor):
