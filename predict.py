@@ -13,6 +13,7 @@ import requests
 import tempfile
 import torch
 import torchaudio
+from typing import Iterator, Optional
 from api import TextToSpeech
 from utils.audio import load_voices, load_audio
 
@@ -28,10 +29,15 @@ def download(url, folder, ext):
     return filepath
 
 
+
 class CogOutput(BaseModel):
     file: Path
-    thumbnail: Path
-    attributes: dict
+    name: Optional[str] = None
+    thumbnail: Optional[Path] = None
+    attributes: Optional[dict] = None
+    progress: Optional[float] = None
+    isFinal: bool = False
+
 
 
 class Predictor(BasePredictor):
@@ -47,7 +53,7 @@ class Predictor(BasePredictor):
         preset: str = Input(description="Preset to use", default="standard", choices=["ultra_fast", "fast", "standard", "high_quality"]),
         seed: int = Input(description="Seed for deterministic generation", default=None),
         #candidates: int = Input(description="Number of candidates to generate", default=1),
-    ) -> CogOutput:
+    ) -> Iterator[CogOutput]:
 
         out_dir = Path(tempfile.mkdtemp())
         out_path = out_dir / f'{voice}.wav'
@@ -87,5 +93,5 @@ class Predictor(BasePredictor):
         
         print(f"Saved to {out_path}")
 
-        return CogOutput(file=out_path, thumbnail=out_path, attributes={})
+        yield CogOutput(file=out_path, thumbnail=out_path, name=text, attributes=None, progress=1.0, isFinal=True)
         
