@@ -1,0 +1,1 @@
+cog predict -i text="somehow I never thought it could happen that voice cloning could be so real. and yet, here we are. I believe we are entering a new era of the simulation. I can see it now." -i preset="fast" -i voice="daniel"

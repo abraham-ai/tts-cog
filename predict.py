@@ -40,18 +40,25 @@ class CogOutput(BaseModel):
 
 class Predictor(BasePredictor):
     
+    preset_voices = os.listdir('preset_voices')
+    voice_options = ['random', 'clone', *preset_voices]
+
     def setup(self):
+        print("cog:setup")
         self.tts = TextToSpeech(models_dir=MODELS_DIR)
+        print("TTS loaded")
 
     def predict(
         self, 
         text: str = Input(description="Input text"),
-        voice: str = Input(description="Voice to use", default="random", choices=["random", "clone"]),
+        voice: str = Input(description="Voice to use", default="random", choices=voice_options),
         voice_file_urls: str = Input(description="Voice clone files", default=None),
         preset: str = Input(description="Preset to use", default="standard", choices=["ultra_fast", "fast", "standard", "high_quality"]),
         seed: int = Input(description="Seed for deterministic generation", default=None),
         #candidates: int = Input(description="Number of candidates to generate", default=1),
     ) -> Iterator[CogOutput]:
+
+        print("Running TTS...")
 
         out_dir = Path(tempfile.mkdtemp())
         out_path = out_dir / f'{voice}.wav'
@@ -71,6 +78,15 @@ class Predictor(BasePredictor):
                 voice_file = download(voice_url, voice_dir, '.wav')
                 sample = load_audio(str(voice_file), 22050)
                 voice_samples.append(sample)
+
+        else:
+            voice_dir = os.path.join('preset_voices', voice)
+            for voice_file in os.listdir(voice_dir):
+                voice_file = os.path.join(voice_dir, voice_file)
+                sample = load_audio(str(voice_file), 22050)
+                voice_samples.append(sample)
+
+        print(f"Got {len(voice_samples)} voice samples")
 
         gen = self.tts.tts_with_preset(
             text, 
