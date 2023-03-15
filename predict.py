@@ -85,8 +85,7 @@ class Predictor(BasePredictor):
                 voice_file = os.path.join(voice_dir, voice_file)
                 sample = load_audio(str(voice_file), 22050)
                 voice_samples.append(sample)
-
-        print(f"Got {len(voice_samples)} voice samples")
+            print(f"Got {len(voice_samples)} voice samples")
 
         gen = self.tts.tts_with_preset(
             text, 
