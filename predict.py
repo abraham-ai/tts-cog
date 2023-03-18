@@ -75,7 +75,8 @@ class Predictor(BasePredictor):
             voice_file_urls = voice_file_urls.split('|')
 
             for voice_url in voice_file_urls:
-                voice_file = download(voice_url, voice_dir, '.wav')
+                ext = '.mp3' if voice_url.lower().endswith('.mp3') else '.wav'
+                voice_file = download(voice_url, voice_dir, ext)
                 sample = load_audio(str(voice_file), 22050)
                 voice_samples.append(sample)
 
@@ -85,6 +86,8 @@ class Predictor(BasePredictor):
                 voice_file = os.path.join(voice_dir, voice_file)
                 sample = load_audio(str(voice_file), 22050)
                 voice_samples.append(sample)
+        
+        if voice_samples:
             print(f"Got {len(voice_samples)} voice samples")
 
         gen = self.tts.tts_with_preset(
